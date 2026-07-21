@@ -195,3 +195,36 @@ flutter build ios --release --dart-define=API_BASE_URL=https://your-backend.exam
 ```
 
 Without it, the app is fully functional offline; only cloud sync is inactive.
+
+---
+
+## Troubleshooting
+
+### `Type 'AVCaptureSession' has no member 'wasInterruptedNotification'`
+
+This is a compile error inside the third-party **`camera_avfoundation`** plugin
+(a dependency of `camera`), not in this app's own code — the build reaches it
+only after compiling everything else successfully. It appears when the plugin
+version and the Xcode SDK are out of step (seen with Xcode 16.2 in CI).
+
+Fixes, in order of preference:
+
+1. **Update the camera plugin.** When a `camera_avfoundation` release supporting
+   your Xcode is available:
+   ```bash
+   flutter pub upgrade camera
+   ```
+2. **Use an Xcode version the current plugin supports** (e.g. the previous
+   minor release) via `xcode-select`, or in CI:
+   ```yaml
+   - uses: maxim-lobanov/setup-xcode@v1
+     with:
+       xcode-version: '15.4'
+   ```
+3. If you do not need in-app photo verification on iOS immediately, the app
+   works without the camera — verification falls back to a manual "Did you
+   complete this prayer?" confirmation, so a temporary camera-plugin issue does
+   not block the rest of the app.
+
+The app's own Swift (the three Screen Time extensions and the blocking bridge)
+is independent of this and compiles cleanly.
