@@ -1,0 +1,47 @@
+# Analyzes, tests, and does a no-codesign iOS build to catch compile errors.
+#
+# A signed build / TestFlight upload is intentionally NOT automated here: it
+# needs your Apple Developer certificates and the Family Controls entitlement,
+# which are account secrets, not repository code. Do those from Xcode on your
+# Mac (see ios/README-iOS.md). This workflow proves the code compiles.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Analyze and test
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+
+  build:
+    name: iOS build (no code signing)
+    needs: test
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter pub get
+      - name: Re-add Screen Time extension targets
+        run: |
+          gem install xcodeproj
+          cd ios && ruby configure_project.rb
+      - run: cd ios && pod install
+      # --no-codesign compiles everything without needing certificates, which
+      # is exactly what a CI check should verify. A real device/TestFlight build
+      # is done signed, from Xcode.
+      - run: flutter build ios --release --no-codesign

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Extension entitlements. The Family Controls entitlement lets the extension
+  use ManagedSettings/ManagedSettingsUI at runtime; the App Group lets it read
+  the selected-app tokens and lock state the main app wrote. Both must be
+  enabled on this target's provisioning profile for the extension to function.
+
+  Like the app's own entitlement, family-controls is inert until Apple grants
+  it to your account — the extension still builds without it.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>com.apple.developer.family-controls</key>
+	<true/>
+	<key>com.apple.security.application-groups</key>
+	<array>
+		<string>group.com.prayerlock.shared</string>
+	</array>
+</dict>
+</plist>
